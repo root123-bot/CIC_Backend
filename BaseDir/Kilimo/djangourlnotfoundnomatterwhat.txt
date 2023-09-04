@@ -1,0 +1,5 @@
+i have been facing the errors "Page not found" even if i've linked my urls fine, i tried every solution but
+it fails now i have my answer this error occured because i was not created the superuser for my project. 
+YOU SHOULD KNOW DJANGO OFFICIALLY START ITS JOB WHEN YOU CREATE A SUPERUSER FOR YOUR PROJECT.
+so just create a superuser for your project and then run the server and you will see the magic.
+```
