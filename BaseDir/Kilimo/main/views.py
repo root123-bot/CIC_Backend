@@ -142,7 +142,7 @@ class CreateResearchArticle(APIView):
     def post(self, request):
         title = request.data.get('title')
         content = request.data.get('content')
-        # media = request.data.get('media')
+        category = request.data.get('category')
         user_id = request.data.get("user_id")
         total_files = request.data.get('total_media')
 
@@ -157,7 +157,8 @@ class CreateResearchArticle(APIView):
             rpost = RawPost.objects.create(
                 title = title,
                 content = content,
-                author = author
+                author = author,
+                category = category
             )
 
             for index in range(int(total_files[-1])):
