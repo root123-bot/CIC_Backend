@@ -1,0 +1,10 @@
+# virtualenv
+myenv/
+
+# repositories
+repo/
+
+# static files
+officer_images/
+researcher_images/
+post_media
