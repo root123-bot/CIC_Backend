@@ -16,6 +16,7 @@ from django.http import HttpResponseRedirect
 from django.views import View
 import datetime
 from .serializers import *
+import json
 
 # Create your views here.
 class UserDetalsAPIView(APIView):
@@ -237,9 +238,10 @@ class UpdateArticle(APIView):
             category = request.data.get("category")
             total_files = request.data.get('total_media')
             trimmed_media = request.data.get("trimmed_media")
+            print(post_id, title, content, category)
             print("total files ", total_files)
-
-            for tm in trimmed_media:
+            print("trimmed media ", trimmed_media)
+            for tm in json.loads(trimmed_media):
                 media = PostMedia.objects.get(id=int(tm))
                 media.delete()
 
@@ -285,8 +287,10 @@ class UpdateArticle(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         except Exception as e:
+            print("THESE ARE ERRORS ", str(e))
             return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+update_article = UpdateArticle.as_view()
 class OfficerPosts(APIView):
     def post(self, request):
         try:

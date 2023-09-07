@@ -5,6 +5,7 @@ from django.views.generic import TemplateView
 from Kilimo.main.views import *
 
 urlpatterns = [
+    url(r'updatearticle/$', update_article, name="updatearticle"),
     url(r'officerposts/$', officer_posts, name="officerposts"),
     url(r'rarticleslist/$', articles_list, name="rarticleslist"),
     url(r'rarticles/$', r_articles, name="rarticles"),
