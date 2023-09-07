@@ -236,20 +236,25 @@ class UpdateArticle(APIView):
             content = request.data.get("content")
             category = request.data.get("category")
             total_files = request.data.get('total_media')
+            trimmed_media = request.data.get("trimmed_media")
             print("total files ", total_files)
+
+            for tm in trimmed_media:
+                media = PostMedia.objects.get(id=int(tm))
+                media.delete()
 
             post = RawPost.objects.get(id=int(post_id))
             post.title = title
             post.content = content
             post.category = category
 
-            # tunapata uploaded media but how we can track which is media came from the
-            # server.... i think we should have the field in frontend of removed media 
-            # files by user(media_ids) so as to remove them before saving the media of posts
-            
+            # no need to send back the urls of files already added to the server in 
+            # some cases if the file is trimmed we need you to send us the ids of the files
+            # which are trimmed so that we can delete them from the server
 
             for index in range(int(total_files[-1])):
                 print("index ", index)
+
                 if index == 0:
                     media = request.data.get('media')
                     print("This is initial media uploaded ", media)

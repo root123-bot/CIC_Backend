@@ -44,7 +44,7 @@ class RawPost(models.Model):
         print("Medias ", media)
         for m in media: 
             media_urls.append({
-                "id": m.media.id,
+                "id": m.id,
                 "path": m.media.url
             })
         
