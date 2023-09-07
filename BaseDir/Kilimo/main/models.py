@@ -28,10 +28,65 @@ class RawPost(models.Model):
     date_posted= models.DateTimeField(auto_now_add=True)
     date_updated= models.DateTimeField(auto_now=True)
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="posts")
+    # lets create the field which will help us to track if the rawpost has been saved as draft/on editing
+    # by the officer so as to avoid researcher to try to edit it again(when tring to edit we should) tell
+    # researcher the post is being edited by officer, so you can't change it
+    is_draft = models.BooleanField(default=False)
+    saved_draft_by = models.ForeignKey(OfficerProfile, on_delete=models.SET_NULL, related_name="drafts", null=True, blank=True)
 
     def __str__(self):
         return self.title
     
+    @property
+    def posted_media(self):
+        media_urls = []
+        media = self.media.all()
+        print("Medias ", media)
+        for m in media: 
+            media_urls.append({
+                "id": m.media.id,
+                "path": m.media.url
+            })
+        
+        return media_urls
+
+    @property
+    def get_researcher(self):
+        return {
+            "id": self.author.id,
+            "username": self.author.researcher.name,
+        }
+
+    @property
+    def drafted_by(self):
+        try:
+            if (self.saved_draft_by):
+                return self.saved_draft_by.user.id
+            else:
+                return None
+        except Exception as err:
+            print("Error ", str(err))
+            return None
+    
+    @property
+    def get_is_published(self):
+        try:
+            if (self.post):
+                return True
+            else:
+                return False
+        except Exception as err:
+            # if you have onetoone relation and you do reverse_access of data
+            # and the data is not available then it will throw an error of 
+            # "DoesNotExist" instead of giving "false"/"null" it gave an error 
+            # i told you one time that django is unlike the Javascript in javascrpt
+            # if you access the element lets say from array which does not exist we 
+            # are getting "undefined" instead of error but in django it throw the 
+            # error you should know that... Also you can learn from this ..
+            # https://stackoverflow.com/questions/33610563/django-onetoone-reverse-relation-doesnotexists-when-empty
+            print("Error ", str(err))
+            return False
+        
     
 # this will be posted by officer
 class Post(models.Model):
@@ -41,7 +96,7 @@ class Post(models.Model):
     date_posted= models.DateTimeField(auto_now_add=True)
     date_updated= models.DateTimeField(auto_now=True)
     raw_post = models.OneToOneField(RawPost, on_delete=models.CASCADE, related_name="post")
-    author = models.ForeignKey(OfficerProfile, on_delete=models.CASCADE)
+    author = models.ForeignKey(OfficerProfile, on_delete=models.CASCADE, related_name="officerposts")
 
     def __str__(self):
         return self.title

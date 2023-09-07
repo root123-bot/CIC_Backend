@@ -140,6 +140,7 @@ complete_researcher_profile = CompleteResearcherProfile.as_view()
 
 class CreateResearchArticle(APIView):
     def post(self, request):
+        print("Im get called")
         title = request.data.get('title')
         content = request.data.get('content')
         category = request.data.get('category')
@@ -163,8 +164,9 @@ class CreateResearchArticle(APIView):
 
             for index in range(int(total_files[-1])):
                 print("index ", index)
-                if index == 1:
+                if index == 0:
                     media = request.data.get('media')
+                    print("This is initial media uploaded ", media)
                     print("media ", media)
                     pmedia = PostMedia.objects.create(
                         media = media
@@ -178,6 +180,7 @@ class CreateResearchArticle(APIView):
                     field = 'media' + str(index)
                     print('field ', field)
                     media = request.data.get(field)
+                    print("These are other media uploaded ", media)
                     pmedia = PostMedia.objects.create(
                         media = media
                     )
@@ -205,9 +208,93 @@ class ResearcherArticles(APIView):
 
         user = get_user_model().objects.get(id=int(user_id))    
         posts = user.posts.all()
-
+        posts = reversed(posts)
         serializer = RawPostSerializer(posts, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 r_articles = ResearcherArticles.as_view()
+
+class ArticlesList(APIView):
+    def get(self, request):
+        try:
+            posts = RawPost.objects.all()
+            posts = reversed(posts)
+            serializer = RawPostSerializer(posts, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+articles_list = ArticlesList.as_view()
+
+class UpdateArticle(APIView):
+    def post(self, request):
+        try:
+            post_id = request.data.get("post_id")
+            title = request.data.get("title")
+            content = request.data.get("content")
+            category = request.data.get("category")
+            total_files = request.data.get('total_media')
+            print("total files ", total_files)
+
+            post = RawPost.objects.get(id=int(post_id))
+            post.title = title
+            post.content = content
+            post.category = category
+
+            # tunapata uploaded media but how we can track which is media came from the
+            # server.... i think we should have the field in frontend of removed media 
+            # files by user(media_ids) so as to remove them before saving the media of posts
+            
+
+            for index in range(int(total_files[-1])):
+                print("index ", index)
+                if index == 0:
+                    media = request.data.get('media')
+                    print("This is initial media uploaded ", media)
+                    print("media ", media)
+                    pmedia = PostMedia.objects.create(
+                        media = media
+                    )
+                    pmedia.save()
+
+                    post.media.add(pmedia)
+                
+                else:
+                    print(index)
+                    field = 'media' + str(index)
+                    print('field ', field)
+                    media = request.data.get(field)
+                    print("These are other media uploaded ", media)
+                    pmedia = PostMedia.objects.create(
+                        media = media
+                    )
+                    pmedia.save()
+
+                    post.media.add(pmedia)
+
+            post.save()
+            serializer = RawPostSerializer(post)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class OfficerPosts(APIView):
+    def post(self, request):
+        try:
+            user_id = request.data.get("user_id")
+            user = get_user_model().objects.get(id=int(user_id))
+            officer = user.officer
+            posts = officer.officerposts.all()
+            posts = reversed(posts)
+            serializer = RawPostSerializer(posts, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+officer_posts = OfficerPosts.as_view()
