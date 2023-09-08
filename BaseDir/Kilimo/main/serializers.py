@@ -10,6 +10,7 @@ class RawPostSerializer(ModelSerializer):
             'content',
             'category',
             'date_posted',
+            'date_updated',
             'posted_media',
             'get_is_published',
             'is_draft',

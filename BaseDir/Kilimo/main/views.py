@@ -218,8 +218,8 @@ r_articles = ResearcherArticles.as_view()
 class ArticlesList(APIView):
     def get(self, request):
         try:
-            posts = RawPost.objects.all()
-            posts = reversed(posts)
+            posts = RawPost.objects.all().order_by('-date_updated')
+            # posts = reversed(posts)
             serializer = RawPostSerializer(posts, many=True)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -366,7 +366,7 @@ class OfficerPosts(APIView):
             user = get_user_model().objects.get(id=int(user_id))
             officer = user.officer
             posts = officer.officerposts.all()
-            posts = reversed(posts)
+            posts = posts.order_by('-date_updated')
             serializer = RawPostSerializer(posts, many=True)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
