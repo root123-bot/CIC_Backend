@@ -45,8 +45,7 @@ class UserDetalsAPIView(APIView):
             return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
 user_details = UserDetalsAPIView.as_view()
-
-
+    
 class DeleteUserAPIView(APIView):
     def post(self, request):
         user_id = request.data.get('user_id')
@@ -291,6 +290,75 @@ class UpdateArticle(APIView):
             return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 update_article = UpdateArticle.as_view()
+
+class UpdateArticleAsDraft(APIView):
+    def post(self, request):
+        try:
+            post_id = request.data.get("post_id")
+            title = request.data.get("title")
+            content = request.data.get("content")
+            category = request.data.get("category")
+            total_files = request.data.get('total_media')
+            trimmed_media = request.data.get("trimmed_media")
+            user_id = request.data.get("user_id")
+
+            officer = get_user_model().objects.get(id=int(user_id)).officer
+
+            print(post_id, title, content, category)
+            print("total files ", total_files)
+            print("trimmed media ", trimmed_media)
+            for tm in json.loads(trimmed_media):
+                media = PostMedia.objects.get(id=int(tm))
+                media.delete()
+
+            post = RawPost.objects.get(id=int(post_id))
+            post.title = title
+            post.content = content
+            post.category = category
+            post.is_draft = True
+            post.saved_draft_by = officer
+            # no need to send back the urls of files already added to the server in 
+            # some cases if the file is trimmed we need you to send us the ids of the files
+            # which are trimmed so that we can delete them from the server
+
+            for index in range(int(total_files[-1])):
+                print("index ", index)
+
+                if index == 0:
+                    media = request.data.get('media')
+                    print("This is initial media uploaded ", media)
+                    print("media ", media)
+                    pmedia = PostMedia.objects.create(
+                        media = media
+                    )
+                    pmedia.save()
+
+                    post.media.add(pmedia)
+                
+                else:
+                    print(index)
+                    field = 'media' + str(index)
+                    print('field ', field)
+                    media = request.data.get(field)
+                    print("These are other media uploaded ", media)
+                    pmedia = PostMedia.objects.create(
+                        media = media
+                    )
+                    pmedia.save()
+
+                    post.media.add(pmedia)
+
+            post.save()
+            serializer = RawPostSerializer(post)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            print("THESE ARE ERRORS ", str(e))
+            return Response({"details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+draft_article = UpdateArticleAsDraft.as_view()
+
 class OfficerPosts(APIView):
     def post(self, request):
         try:

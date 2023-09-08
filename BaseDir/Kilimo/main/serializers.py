@@ -8,6 +8,7 @@ class RawPostSerializer(ModelSerializer):
             'id',
             'title',
             'content',
+            'category',
             'date_posted',
             'posted_media',
             'get_is_published',

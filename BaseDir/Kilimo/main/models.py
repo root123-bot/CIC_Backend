@@ -55,6 +55,7 @@ class RawPost(models.Model):
         return {
             "id": self.author.id,
             "username": self.author.researcher.name,
+            "phone": self.author.phone_number
         }
 
     @property
